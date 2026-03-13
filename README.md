@@ -82,3 +82,4 @@ npm run build
 - Shared config and types remove duplication between the route handler and the client.
 - The UI keeps both layouts available from the same data source to satisfy the bonus view requirement.
 # patient-directory
+# patient-dirrectory-mechinetest
