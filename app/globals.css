@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f4f6;
+  --foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
+  margin: 0;
+  min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.plus-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='340' height='78' viewBox='0 0 340 78' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%238eb5fb'%3E%3Cpath d='M24 0h14v18h18v14H38v18H24V32H6V18h18V0Z'/%3E%3Cpath d='M76 12h9v12h12v9H85v12h-9V33H64v-9h12V12Z'/%3E%3Cpath d='M116 0h18v24h24v18h-24v24h-18V42H92V24h24V0Z'/%3E%3Cpath d='M178 14h12v16h16v12h-16v16h-12V42h-16V30h16V14Z'/%3E%3Cpath d='M228 4h14v18h18v14h-18v18h-14V36h-18V22h18V4Z'/%3E%3Cpath d='M282 10h10v14h14v10h-14v14h-10V34h-14V24h14V10Z'/%3E%3Cpath d='M320 0h20v26h26v20h-26v26h-20V46h-26V26h26V0Z'/%3E%3Cpath d='M58 48h8v10h10v8H66v10h-8V66H48v-8h10V48Z'/%3E%3Cpath d='M150 52h8v10h10v8h-10v10h-8V70h-10v-8h10V52Z'/%3E%3Cpath d='M252 50h8v10h10v8h-10v10h-8V68h-10v-8h10V50Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-position: right center;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }

@@ -1,89 +1,109 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
-
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 }
 
-export const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
-  // Generate page numbers to show
-  const getPageNumbers = () => {
-    const delta = 2; // how many pages to show beside current
-    const range: number[] = [];
-    const rangeWithDots: (number | string)[] = [];
-    let l: number | undefined;
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
+  if (totalPages <= 1) {
+    return null;
+  }
 
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-            range.push(i);
-        }
-    }
-
-    for (const i of range) {
-        if (l !== undefined) {
-            if (i - l === 2) {
-                rangeWithDots.push(l + 1);
-            } else if (i - l !== 1) {
-                rangeWithDots.push('...');
-            }
-        }
-        rangeWithDots.push(i);
-        l = i;
-    }
-
-    return rangeWithDots;
-  };
-
-  if (totalPages <= 1) return null;
+  const pages = getVisiblePages(currentPage, totalPages);
 
   return (
-    <div className="flex items-center justify-center gap-1.5 font-medium">
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
+    <nav className="flex items-center justify-center gap-1 text-[10px] text-slate-500">
+      <PagerButton
         disabled={currentPage === 1}
-        className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm ${
-          currentPage === 1 
-            ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100' 
-            : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover:border-slate-300'
-        }`}
+        onClick={() => onPageChange(currentPage - 1)}
       >
-        <ChevronLeft size={18} />
-      </button>
+        Previous
+      </PagerButton>
 
-      {getPageNumbers().map((pageNum, idx) => (
-        <React.Fragment key={idx}>
-          {pageNum === '...' ? (
-            <div className="w-10 h-10 flex items-center justify-center text-slate-400">
-              <MoreHorizontal size={18} />
-            </div>
-          ) : (
-            <button
-              onClick={() => onPageChange(pageNum as number)}
-              className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm border ${
-                currentPage === pageNum
-                  ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
-                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-              }`}
-            >
-              {pageNum}
-            </button>
-          )}
-        </React.Fragment>
-      ))}
+      {pages.map((page, index) =>
+        page === '...' ? (
+          <span key={`${page}-${index}`} className="px-2 py-1">
+            ...
+          </span>
+        ) : (
+          <button
+            key={page}
+            className={`rounded border px-2 py-1 ${
+              page === currentPage
+                ? 'border-[#4a7ee9] bg-[#4a7ee9] text-white'
+                : 'border-transparent bg-transparent hover:border-slate-200'
+            }`}
+            onClick={() => onPageChange(page)}
+            type="button"
+          >
+            {String(page).padStart(2, '0')}
+          </button>
+        ),
+      )}
 
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
+      <PagerButton
         disabled={currentPage === totalPages}
-        className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm ${
-          currentPage === totalPages 
-            ? 'bg-slate-50 text-slate-300 cursor-not-allowed border border-slate-100' 
-            : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200 hover:border-slate-300'
-        }`}
+        onClick={() => onPageChange(currentPage + 1)}
       >
-        <ChevronRight size={18} />
-      </button>
-    </div>
+        Next
+      </PagerButton>
+    </nav>
   );
-};
+}
+
+function PagerButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`rounded border px-2 py-1 ${
+        disabled
+          ? 'cursor-not-allowed border-slate-200 text-slate-300'
+          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+      }`}
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      {children}
+    </button>
+  );
+}
+
+function getVisiblePages(currentPage: number, totalPages: number) {
+  const visiblePages: Array<number | '...'> = [];
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, currentPage + 2);
+
+  if (start > 1) {
+    visiblePages.push(1);
+  }
+
+  if (start > 2) {
+    visiblePages.push('...');
+  }
+
+  for (let page = start; page <= end; page += 1) {
+    visiblePages.push(page);
+  }
+
+  if (end < totalPages - 1) {
+    visiblePages.push('...');
+  }
+
+  if (end < totalPages) {
+    visiblePages.push(totalPages);
+  }
+
+  return visiblePages;
+}

@@ -1,91 +1,121 @@
-import React from 'react';
-import type { Patient } from '@/app/api/data/route';
-import { Mail, Phone, MapPin, UserCircle2 } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
-export const RowView = ({ data }: { data: Patient[] }) => {
-  if (!data?.length) return null;
+import { formatIssue } from '@/lib/utils';
+import type { Patient } from '@/types/patient';
 
+import { PatientAvatar } from './PatientAvatar';
+
+export function RowView({ data }: { data: Patient[] }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in duration-500">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-xs">
-            <tr>
-              <th className="px-6 py-4 rounded-tl-2xl">ID</th>
-              <th className="px-6 py-4">Patient</th>
-              <th className="px-6 py-4">Age</th>
-              <th className="px-6 py-4">Medical Issue</th>
-              <th className="px-6 py-4">Contact</th>
-              <th className="px-6 py-4 text-right rounded-tr-2xl">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-            {data.map((patient, i) => (
-              <tr 
-                key={patient.patient_id} 
-                className={`hover:bg-slate-50/80 transition-colors group ${i % 2 === 0 ? '' : 'bg-slate-50/30'}`}
-              >
-                <td className="px-6 py-4 font-mono text-slate-500">#{patient.patient_id}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    {patient.photo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img 
-                        src={patient.photo_url} 
-                        alt="" 
-                        className="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.patient_name)}&background=random`;
-                        }}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                        <UserCircle2 size={24} />
-                      </div>
-                    )}
-                    <span className="font-bold text-slate-900">{patient.patient_name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700">
-                    {patient.age}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold ring-1 ring-indigo-200/50">
-                    {patient.medical_issue.replace(/_/g, ' ')}
+    <div className="overflow-x-auto">
+      <table className="min-w-full border-separate border-spacing-0">
+        <thead>
+          <tr className="border-b border-slate-200">
+            <HeaderCell>ID</HeaderCell>
+            <HeaderCell>Name</HeaderCell>
+            <HeaderCell>Age</HeaderCell>
+            <HeaderCell>Medical Issue</HeaderCell>
+            <HeaderCell>Address</HeaderCell>
+            <HeaderCell>Phone Number</HeaderCell>
+            <HeaderCell>Email ID</HeaderCell>
+            <HeaderCell />
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((patient) => {
+            const primaryContact = patient.contact[0];
+
+            return (
+              <tr key={patient.patient_id} className="group">
+                <BodyCell className="w-[96px] whitespace-nowrap">
+                  <span className="text-[11px] font-medium tracking-[0.01em] text-slate-700">
+                    {formatPatientId(patient.patient_id)}
                   </span>
-                </td>
-                <td className="px-6 py-4">
+                </BodyCell>
+                <BodyCell className="min-w-[230px]">
                   <div className="flex items-center gap-2">
-                    {patient.contact[0]?.email && (
-                      <a href={`mailto:${patient.contact[0].email}`} className="text-slate-400 hover:text-indigo-600 transition-colors" title={patient.contact[0].email}>
-                        <Mail size={16} />
-                      </a>
-                    )}
-                    {patient.contact[0]?.number && (
-                      <a href={`tel:${patient.contact[0].number}`} className="text-slate-400 hover:text-indigo-600 transition-colors" title={patient.contact[0].number}>
-                        <Phone size={16} />
-                      </a>
-                    )}
-                    {patient.contact[0]?.address && (
-                      <span className="text-slate-400 cursor-help" title={patient.contact[0].address}>
-                        <MapPin size={16} />
-                      </span>
-                    )}
-                    {patient.contact.length === 0 && <span className="text-slate-400">-</span>}
+                    <PatientAvatar
+                      name={patient.patient_name}
+                      photoUrl={patient.photo_url}
+                      size="sm"
+                    />
+                    <span className="text-[10px] font-medium text-slate-700">
+                      {patient.patient_name}
+                    </span>
                   </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-indigo-600 hover:text-indigo-900 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg">
-                    View
-                  </button>
-                </td>
+                </BodyCell>
+                <BodyCell className="w-[60px] text-[10px] text-slate-600">
+                  {patient.age}
+                </BodyCell>
+                <BodyCell className="min-w-[120px]">
+                  <span className={`inline-flex rounded px-1.5 py-0.5 text-[9px] font-medium ${getIssueBadgeTone(patient.medical_issue)}`}>
+                    {formatIssue(patient.medical_issue)}
+                  </span>
+                </BodyCell>
+                <BodyCell className="min-w-[180px] text-[10px] text-slate-600">
+                  {primaryContact?.address ?? <span className="text-[#e55a5a]">N/A</span>}
+                </BodyCell>
+                <BodyCell className="min-w-[110px] text-[10px] text-slate-600">
+                  {primaryContact?.number ?? <span className="text-[#e55a5a]">N/A</span>}
+                </BodyCell>
+                <BodyCell className="min-w-[150px] text-[10px] text-slate-600">
+                  {primaryContact?.email ?? <span className="text-[#e55a5a]">N/A</span>}
+                </BodyCell>
+                <BodyCell className="w-[30px] text-right text-slate-400">
+                  <ChevronRight className="h-3.5 w-3.5 transition group-hover:text-slate-600" />
+                </BodyCell>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
-};
+}
+
+function HeaderCell({
+  children,
+}: {
+  children?: React.ReactNode;
+}) {
+  return (
+    <th className="border-b border-slate-200 px-4 py-3 text-left text-[10px] font-semibold text-[#4a7ee9]">
+      {children}
+    </th>
+  );
+}
+
+function BodyCell({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <td className={`border-b border-slate-100 px-4 py-3 align-middle ${className ?? ''}`}>
+      {children}
+    </td>
+  );
+}
+
+function formatPatientId(patientId: number) {
+  return `ID-${String(patientId).padStart(4, '0')}`;
+}
+
+function getIssueBadgeTone(issue: string) {
+  const tones: Record<string, string> = {
+    fever: 'bg-[#ffe4e4] text-[#b32828]',
+    headache: 'bg-[#ffe7c9] text-[#9a5b00]',
+    'sore throat': 'bg-[#fff2bd] text-[#8a6700]',
+    'sprained ankle': 'bg-[#d9f7ea] text-[#08784f]',
+    rash: 'bg-[#ffd9ef] text-[#a12a72]',
+    'ear infection': 'bg-[#dcecff] text-[#1f60c2]',
+    sinusitis: 'bg-[#e7f0ff] text-[#44638d]',
+    'allergic reaction': 'bg-[#fbe8c7] text-[#9b5e00]',
+    'stomach ache': 'bg-[#e3f8d8] text-[#4b7d22]',
+    'broken arm': 'bg-[#ece7ff] text-[#5f42ba]',
+  };
+
+  return tones[issue.toLowerCase()] ?? 'bg-slate-100 text-slate-700';
+}
